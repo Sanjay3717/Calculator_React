@@ -1,33 +1,65 @@
 import {Component} from 'react'
+import {evaluate} from 'mathjs'
+
 import './index.css'
+
+const slice = require('array-slice')
 
 class Calculator extends Component {
   state = {
     clickedButton: [],
     sum: 0,
     result: 0,
+    resultClicked: false,
   }
 
   onButtonClicked = event => {
     if (event.target.name === 'AC') {
       console.log('AC clicked')
-      this.setState({clickedButton: '', result: 0})
+      this.setState({clickedButton: [], result: 0, isClicked: false})
     } else if (event.target.name === 'C') {
-      console.log('C clicked')
+      const {result} = this.state
+
+      const myArr = String(result)
+        .split('')
+        .map(num => {
+          console.log(num)
+          return Number(num)
+        })
+      console.log(myArr)
+
+      const slicedValue = slice(myArr, 0, -1)
+      this.setState({
+        result: Number(slicedValue),
+        clickedButton: Number(slicedValue),
+      })
     } else if (event.target.name === '=') {
-      this.setState({clickedButton: [], result: '0'})
-    }        clickedButton: [...prevState.clickedButton, event.target.name],
+      const {clickedButton, result} = this.state
+      this.setState({
+        resultClicked: true,
+        result: evaluate(clickedButton),
+      })
+    } else {
+      const {result, resultClicked} = this.state
+
+      this.setState(prevState => ({
+        clickedButton: prevState.clickedButton + event.target.name,
       }))
     }
   }
 
   render() {
-    const {clickedButton, result} = this.state
+    const {clickedButton, result, resultClicked} = this.state
     console.log(clickedButton)
+    console.log(result)
     return (
       <div className="calculator-container">
         <h1>Sanjay's Calculator</h1>
-        {clickedButton.length >= 1 ? <p>{clickedButton}</p> : <p>{result}</p>}
+        {!resultClicked && clickedButton.length >= 1 ? (
+          <p>{clickedButton}</p>
+        ) : (
+          <p>{result}</p>
+        )}
 
         <div>
           <div className="buttons-container">
@@ -39,14 +71,7 @@ class Calculator extends Component {
             >
               AC
             </button>
-            <button
-              type="button"
-              className="calc-button"
-              onClick={this.onButtonClicked}
-              name="%"
-            >
-              %
-            </button>
+
             <button
               type="button"
               className="calc-button"
@@ -94,7 +119,7 @@ class Calculator extends Component {
               type="button"
               className="calc-button"
               onClick={this.onButtonClicked}
-              name="X"
+              name="*"
             >
               X
             </button>
